@@ -4,6 +4,7 @@ import com.zuishuai.cn.entity.Cart;
 import com.zuishuai.cn.entity.User;
 import com.zuishuai.cn.service.UserService;
 import com.zuishuai.cn.utils.LoginUserUtils;
+import com.zuishuai.cn.utils.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,7 +38,7 @@ public class UserController {
             //说明注册成功
             //跳转到登录页面
             session.setAttribute("message",null);
-            return "redirect:/";
+            return "redirect:/toLogin";
         }else if(row == -1){
             session.setAttribute("message","用户名已存在");
             return "redirect:/toRegister";
@@ -49,24 +50,24 @@ public class UserController {
     }
 
     @PostMapping("login")
-    public String login(User user,Model model){
-        model.addAttribute("username",user.getUsername());
+    public String login(User user){
+        HttpSession session = ServletUtils.getSession();
+        session.setAttribute("username",user.getUsername());
         if(user.getUsername() == "" || user.getPassword() == ""){
-            model.addAttribute("message","用户名密码不能为空");
-            //跳转回注册页面 提示错误信息并回显用户名
-            return "redirect:/";
+            session.setAttribute("message","用户名密码不能为空");
+            //跳转回登录页面 提示错误信息并回显用户名
+            return "redirect:/toLogin";
         }
         User loginUser = userService.loginUser(user);
-
         if(loginUser != null){
             //说明注册成功 保存用户到session中
             LoginUserUtils.setLoginUser(user);
             //加载商品信息 然后跳转到商城首页
             return "redirect:/good/list";
         }else{
-            model.addAttribute("message","用户名或密码错误");
-            //跳转回注册页面 提示错误信息并回显用户名
-            return "redirect:/";
+            session.setAttribute("message","用户名或密码错误");
+            //跳转回登录页面 提示错误信息并回显用户名
+            return "redirect:/toLogin";
         }
 
     }
